@@ -142,9 +142,12 @@ along with this program.  If not, see
     }
 
     function _makeDefaultButton(options) {
+        var span = $('<span />');
+        span.attr( 'id', 'MonthPicker_Button_' + this.id );
+        span.attr( 'class', 'month-picker-open-button' );
+        span.text( options.i18n.buttonText );
         // this refers to the associated input field.
-        return $('<span id="MonthPicker_Button_' + this.id + '" class="month-picker-open-button">' + options.i18n.buttonText + '</span>')
-            .jqueryUIButton({
+        return span.jqueryUIButton({
                 text: false,
                 icons: {
                     // Defaults to 'ui-icon-calculator'.
@@ -182,19 +185,48 @@ along with this program.  If not, see
         }
     };
 
-    var _markup =
-        '<div class="ui-widget-header month-picker-header ui-corner-all">' +
-            '<table class="month-picker-year-table">' +
-                '<tr>' +
-                    '<td class="month-picker-previous"><a /></td>' +
-                    '<td class="month-picker-title"><a /></td>' +
-                    '<td class="month-picker-next"><a /></td>' +
-                '</tr>' +
-            '</table>' +
-        '</div>' +
-        '<div>' +
-            '<table class="month-picker-month-table" />' +
-        '</div>';
+    /**
+     * Return element Month Picker Table
+     */
+    function getMonthTableWrapper(){
+        var monthPickerWrapper = $( '<div />' );
+        var monthPickerTable = $( '<table />' );
+        monthPickerTable.attr( 'class', 'month-picker-month-table' );
+        // Append the table to the wrapper container.
+        monthPickerTable.appendTo( monthPickerWrapper );
+
+        return monthPickerWrapper;
+    }
+
+    /**
+     * Return element Header Picker
+     */
+    function getHeaderWrapper(){
+        // Div container
+        var headerWrapper = $( '<div />' );
+        headerWrapper.attr( 'class', 'ui-widget-header month-picker-header ui-corner-all' );
+        // Table
+        var headerYearTable = $( '<table />' );
+        headerYearTable.attr( 'class', 'month-picker-year-table' );
+        // Row
+        var headerYearRow = $( '<tr />' );
+        // Cells
+        var headerYearCells = [ 'previous', 'title', 'next' ];
+        var headerYearCell, headerYearCellLink;
+        for( var i = 0; i < 3; i ++ ) {
+            headerYearCell = $( '<td />' );
+            headerYearCell.attr( 'class', 'month-picker-' + headerYearCells[ i ] );
+            headerYearCellLink = $( '<a />' );
+            // Append link and cell to row.
+            headerYearCellLink.appendTo( headerYearCell );
+            headerYearCell.appendTo( headerYearRow );
+        }
+        // Append row to table and table to the wrapper container.
+        headerYearRow.appendTo( headerYearTable );
+        headerYearTable.appendTo( headerWrapper );
+
+        return headerWrapper;
+    }
 
     // Groups state and functionallity to fade in the jump years hint
     // when the user mouses over the Year 2016 text.
@@ -401,10 +433,19 @@ along with this program.  If not, see
                 _el.css('width', 'auto');
             }
 
-            var _menu = this._monthPickerMenu = $('<div id="MonthPicker_' + _el[0].id + '" class="month-picker ui-widget ui-widget-content ui-corner-all"></div>').hide();
+            var _menu  = $('<div />');
+            _menu.attr( 'id', 'MonthPicker_' + _el[0].id );
+            _menu.attr( 'class', 'month-picker ui-widget ui-widget-content ui-corner-all' );
+            _menu.hide();
+            this._monthPickerMenu = _menu;
             var isInline = _isInline(_el);
 
-            $(_markup).appendTo(_menu);
+            var _markupHeader = getHeaderWrapper();
+            var _markupMonthPicker = getMonthTableWrapper();
+
+            _markupHeader.appendTo( _menu );
+            _markupMonthPicker.appendTo( _menu );
+
             _menu.appendTo( isInline ? _el : document.body );
 
             this._titleButton =
@@ -435,7 +476,12 @@ along with this program.  If not, see
 
                 // Use <a> tag instead of <button> to avoid issues
                 // only with Google Chrome (#50).
-                $tr.append('<td><a class="button-' + (i + 1) + '" /></td>');
+                var $td = $('<td />');
+                var $a = $('<a />');
+                $a.attr( 'class', 'button-' + (i + 1)  );
+
+                $a.appendTo( $td );
+                $td.appendTo( $tr );
             }
 
             this._buttons = $('a', $table).jqueryUIButton();
@@ -742,7 +788,11 @@ along with this program.  If not, see
         _createValidationMessage: function () {
             var _errMsg = this.options.ValidationErrorMessage, _elem = this.element;
             if ($.inArray(_errMsg, [null, '']) === -1) {
-                var _msgEl = $('<span id="MonthPicker_Validation_' + _elem[0].id + '" class="month-picker-invalid-message">' + _errMsg + '</span>');
+
+                var _msgEl = $('<span />');
+                _msgEl.attr( 'id', 'MonthPicker_Validation_' + _elem[0].id );
+                _msgEl.attr( 'class', 'month-picker-invalid-message' );
+                _msgEl.text( _errMsg );
 
                 var _button = this._monthPickerButton;
                 this._validationMessage = _msgEl.insertAfter(_button.length ? _button : _elem);
